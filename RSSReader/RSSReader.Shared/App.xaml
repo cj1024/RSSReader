@@ -1,0 +1,10 @@
+﻿<Application
+    x:Class="RSSReader.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ViewModel="using:RSSReader.ViewModel"
+    >
+    <Application.Resources>
+        <ViewModel:ViewModelLocator x:Key="ViewModelLocator"/>
+    </Application.Resources>
+</Application>

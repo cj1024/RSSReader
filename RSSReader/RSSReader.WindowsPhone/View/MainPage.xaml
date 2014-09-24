@@ -1,0 +1,73 @@
+﻿<ViewModel:ViewModelPage
+    x:Class="RSSReader.View.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:ViewModel="using:RSSReader.ViewModel"
+    xmlns:Converters="using:RSSReader.Converters"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    DataContext="{Binding Source={StaticResource ViewModelLocator},Path=MainPageViewModel}"
+    >
+    
+    <Page.Resources>
+        <Converters:DateToStringConverter x:Key="DateTimeFormatConverter"/>
+        <Converters:BooleanConverter x:Key="VisibilityConverter">
+            <Converters:BooleanConverter.TrueValue>
+                <Visibility>Visible</Visibility>
+            </Converters:BooleanConverter.TrueValue>
+            <Converters:BooleanConverter.FalseValue>
+                <Visibility>Collapsed</Visibility>
+            </Converters:BooleanConverter.FalseValue>
+        </Converters:BooleanConverter>
+    </Page.Resources>
+    <Pivot ItemsSource="{Binding Path=RSSFeeds}">
+        <Pivot.HeaderTemplate>
+            <DataTemplate>
+                <TextBlock DataContext="{Binding}" Text="{Binding Header}"/>
+            </DataTemplate>
+        </Pivot.HeaderTemplate>
+        <Pivot.ItemTemplate>
+            <DataTemplate>
+                <Grid>
+                    <ListView IsItemClickEnabled="True" ItemsSource="{Binding ListItems}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Margin" Value="0,0,0,12"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.Header>
+                            <ProgressBar IsIndeterminate="True" Visibility="{Binding OnLoading,Converter={StaticResource VisibilityConverter}}"/>
+                        </ListView.Header>
+                        <ListView.Footer>
+                            <StackPanel>
+                                <AppBarButton HorizontalAlignment="Center" Icon="Refresh" Visibility="{Binding LoadFailed,Converter={StaticResource VisibilityConverter}}"/>
+                            </StackPanel>
+                        </ListView.Footer>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="24"/>
+                                    <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="18" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="2" Text="{Binding PublishTime,Converter={StaticResource DateTimeFormatConverter},ConverterParameter='MM-dd HH:mm'}" FontSize="16" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </DataTemplate>
+        </Pivot.ItemTemplate>
+    </Pivot>
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton Icon="Add" Label="Add"/>
+            <AppBarButton Icon="Delete" Label="Delete"/>
+        </CommandBar>
+    </Page.BottomAppBar>
+</ViewModel:ViewModelPage>
