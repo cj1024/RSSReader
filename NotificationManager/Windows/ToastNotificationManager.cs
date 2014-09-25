@@ -7,7 +7,7 @@ namespace NotificationManager.Windows
 {
     internal class ToastNotificationManager : IToastNotificationManager
     {
-        public void ShowToast(string title, string content,ToastAuidoType auidoType, uint delayInSecond, uint repeat, uint repeatInterval, string token)
+        public void ShowToast(string title, string content,ToastAuidoType auidoType, uint delayInSecond, uint repeat, uint repeatInterval, string token, string id)
         {
             throw new NotImplementedException();
         }
@@ -23,6 +23,16 @@ namespace NotificationManager.Windows
         }
 
         public void RemoveScheduledToastNotifications(IList<ScheduledToastNotification> notifications)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetToken(ToastNotification notification)
+        {
+            throw new NotImplementedException();
+        }
+
+        public string GetToken(ScheduledToastNotification notification)
         {
             throw new NotImplementedException();
         }

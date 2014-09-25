@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.Data.Xml.Dom;
 
 namespace NotificationManager.WindowsPhone
 {
@@ -11,22 +12,35 @@ namespace NotificationManager.WindowsPhone
     internal sealed class ToastNotificationManager : IToastNotificationManager
     {
 
+        private const string EXTRANODENAME = "extrainfo";
+        private const string TOKENATTRIBUTENAME = "token";
+
         private global::Windows.UI.Notifications.ToastNotifier ToastNotifier
         {
             get { return global::Windows.UI.Notifications.ToastNotificationManager.CreateToastNotifier(); }
         }
 
-        public void ShowToast(string title, string content,ToastAuidoType auidoType, uint delayInSecond, uint repeat, uint repeatInterval, string token)
+        public void ShowToast(string title, string content,ToastAuidoType auidoType, uint delayInSecond, uint repeat, uint repeatInterval, string token, string id)
         {
             if (repeat > 5)
             {
-                throw new ArgumentOutOfRangeException("repeat", token, "Should Be Less Than 5");
+                throw new ArgumentOutOfRangeException("repeat", repeat, "Should Be Less Than 5");
             }
-            if (!string.IsNullOrEmpty(token) && token.Length > 15)
+            if (!string.IsNullOrEmpty(id) && id.Length > 15)
             {
-                throw new ArgumentOutOfRangeException("token", token, "Should Be Less Than 15 Characters");
+                throw new ArgumentOutOfRangeException("id", id, "Should Be Less Than 15 Characters");
             }
             var toastDOM = new ToastNotificationContent(title, content, auidoType).GetXmlDocument();
+            if (!string.IsNullOrEmpty(token))
+            {
+                var toastNode = toastDOM.SelectSingleNode("/toast");
+                if (toastNode != null)
+                {
+                    var element = toastDOM.CreateElement(EXTRANODENAME);
+                    element.SetAttribute(TOKENATTRIBUTENAME, token);
+                    toastNode.AppendChild(element);
+                }
+            }
             try
             {
                 if (delayInSecond == 0)
@@ -41,9 +55,9 @@ namespace NotificationManager.WindowsPhone
                 {
                     var dueTime = DateTimeOffset.Now.AddSeconds(delayInSecond);
                     global::Windows.UI.Notifications.ScheduledToastNotification toast = repeat > 0 ? new global::Windows.UI.Notifications.ScheduledToastNotification(toastDOM, dueTime, TimeSpan.FromSeconds(Math.Min(3600, Math.Max(60, repeatInterval))), repeat) : new global::Windows.UI.Notifications.ScheduledToastNotification(toastDOM, dueTime);
-                    if (!string.IsNullOrEmpty(token))
+                    if (!string.IsNullOrEmpty(id))
                     {
-                        toast.Id = token;
+                        toast.Id = id;
                     }
                     ToastNotifier.AddToSchedule(toast);
                 }
@@ -79,6 +93,34 @@ namespace NotificationManager.WindowsPhone
                     }
                 }
             }
+        }
+
+        private string GetToken(XmlDocument content)
+        {
+            var toastNode = content.SelectSingleNode("/toast");
+            if (toastNode != null)
+            {
+                var extrainfonode = toastNode.ChildNodes.FirstOrDefault(node => EXTRANODENAME.Equals(node.NodeName, StringComparison.OrdinalIgnoreCase));
+                if (extrainfonode != null)
+                {
+                    var tokenattribute = extrainfonode.Attributes.FirstOrDefault(attribute => TOKENATTRIBUTENAME.Equals(attribute.NodeName, StringComparison.OrdinalIgnoreCase));
+                    if (tokenattribute != null)
+                    {
+                        return tokenattribute.InnerText;
+                    }
+                }
+            }
+            return null;
+        }
+
+        public string GetToken(global::Windows.UI.Notifications.ToastNotification notification)
+        {
+            return GetToken(notification.Content);
+        }
+
+        public string GetToken(global::Windows.UI.Notifications.ScheduledToastNotification notification)
+        {
+            return GetToken(notification.Content);
         }
 
         public event global::Windows.Foundation.TypedEventHandler<global::Windows.UI.Notifications.ToastNotification, global::Windows.UI.Notifications.ToastActivatedEventArgs> ToastActivated;

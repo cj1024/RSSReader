@@ -16,7 +16,7 @@
 
         public static bool IsNetworkAvailable
         {
-            get { return false; }
+            get { return System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable();  }
         }
 
     }
