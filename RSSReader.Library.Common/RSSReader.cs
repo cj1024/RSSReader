@@ -96,6 +96,20 @@ namespace RSSReader.Library.Common
             return element == null ? default(T) : ChangeType<T>(element.InnerText);
         }
 
+        private static T GetInnerAttribute<T>(XmlDocument document, string tag, string attribute)
+        {
+            var element = document.GetElementsByTagName(tag).FirstOrDefault();
+            var attributeNode = element == null ? null : element.Attributes.GetNamedItem(attribute);
+            return attributeNode == null ? default(T) : ChangeType<T>(attributeNode.InnerText);
+        }
+
+        private static T GetInnerAttribute<T>(XmlElement document, string tag, string attribute)
+        {
+            var element = document.GetElementsByTagName(tag).FirstOrDefault();
+            var attributeNode = element == null ? null : element.Attributes.GetNamedItem(attribute);
+            return attributeNode == null ? default(T) : ChangeType<T>(attributeNode.InnerText);
+        }
+
         public void InitializeWithXmlDocument(XmlDocument document)
         {
             Title = GetInnerTextForTagName<string>(document, "title");
@@ -110,7 +124,10 @@ namespace RSSReader.Library.Common
                            Title = GetInnerTextForTagName<string>(item, "title"),
                            Link = GetInnerTextForTagName<string>(item, "link"),
                            Description = GetInnerTextForTagName<string>(item, "description"),
-                           PublishTime = ChangeDateTimeType(GetInnerTextForTagName<string>(item, "pubDate"))
+                           PublishTime = ChangeDateTimeType(GetInnerTextForTagName<string>(item, "pubDate")),
+                           MediaType = GetInnerAttribute<string>(item, "enclosure", "type"),
+                           MediaUrl = GetInnerAttribute<string>(item, "enclosure", "url"),
+                           MediaLength = GetInnerAttribute<long>(item, "enclosure", "length")
                        };
         }
 
