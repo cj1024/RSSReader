@@ -275,11 +275,11 @@ namespace RSSReader.ViewModel
 
         void RefreshCurrentRSSFeed()
         {
+            CurrentItemLoaded();
             if (RSSFeeds.Count > SelectedIndex)
             {
                 RSSFeeds[SelectedIndex].Refresh();
             }
-            CurrentItemLoaded();
         }
 
         void DeleteCurrentRSSFeed()

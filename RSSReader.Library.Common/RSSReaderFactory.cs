@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -84,6 +85,10 @@ namespace RSSReader.Library.Common
                 var lastReader = new T();
                 lastReader.InitializeWithXmlDocument(tempResult);
                 if (lastReader.LastUpdateTime.HasValue && lastReader.UpdateTimeSpan.HasValue && lastReader.LastUpdateTime.Value.Add(lastReader.UpdateTimeSpan.Value) < DateTime.Now)
+                {
+                    result = tempResult;
+                }
+                else if (file.DateCreated.AddMinutes(15) >= DateTime.Now)
                 {
                     result = tempResult;
                 }
