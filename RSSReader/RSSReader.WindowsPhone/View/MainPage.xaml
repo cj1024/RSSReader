@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ViewModel="using:RSSReader.ViewModel"
     xmlns:Converters="using:RSSReader.Converters"
+    xmlns:Controls="using:RSSReader.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     DataContext="{Binding Source={StaticResource ViewModelLocator},Path=MainPageViewModel}"
@@ -22,7 +23,7 @@
             </Converters:BooleanConverter.FalseValue>
         </Converters:BooleanConverter>
     </Page.Resources>
-    <Pivot ItemsSource="{Binding Path=RSSFeeds}">
+    <Pivot ItemsSource="{Binding Path=RSSFeeds}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
         <Pivot.HeaderTemplate>
             <DataTemplate>
                 <TextBlock DataContext="{Binding}" Text="{Binding Header}"/>
@@ -31,18 +32,19 @@
         <Pivot.ItemTemplate>
             <DataTemplate>
                 <Grid>
-                    <ListView IsItemClickEnabled="True" ItemsSource="{Binding ListItems}">
+                    <ProgressBar IsIndeterminate="True" Visibility="{Binding OnLoading,Converter={StaticResource VisibilityConverter}}" VerticalAlignment="Top"/>
+                    <Controls:AdvancedListView IsItemClickEnabled="True" ItemsSource="{Binding ListItems}" ItemClickedCommand="{Binding ItemClickedCommand}">
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Margin" Value="0,0,0,12"/>
                             </Style>
                         </ListView.ItemContainerStyle>
                         <ListView.Header>
-                            <ProgressBar IsIndeterminate="True" Visibility="{Binding OnLoading,Converter={StaticResource VisibilityConverter}}"/>
+                            <StackPanel>
+                            </StackPanel>
                         </ListView.Header>
                         <ListView.Footer>
                             <StackPanel>
-                                <AppBarButton HorizontalAlignment="Center" Icon="Refresh" Visibility="{Binding LoadFailed,Converter={StaticResource VisibilityConverter}}"/>
                             </StackPanel>
                         </ListView.Footer>
                         <ListView.ItemTemplate>
@@ -59,15 +61,16 @@
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>
-                    </ListView>
+                    </Controls:AdvancedListView>
                 </Grid>
             </DataTemplate>
         </Pivot.ItemTemplate>
     </Pivot>
     <Page.BottomAppBar>
         <CommandBar>
-            <AppBarButton Icon="Add" Label="Add"/>
-            <AppBarButton Icon="Delete" Label="Delete"/>
+            <AppBarButton Icon="Add" Label="Add" Command="{Binding AddCommand}" IsEnabled="{Binding CanAdd}"/>
+            <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" IsEnabled="{Binding CanRefresh}"/>
+            <AppBarButton Icon="Delete" Label="Delete" Command="{Binding DeleteCommand}" IsEnabled="{Binding CanDelete}"/>
         </CommandBar>
     </Page.BottomAppBar>
 </ViewModel:ViewModelPage>

@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows.Input;
 using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 using RSSReader.Common;
 using RSSReader.Library.Common;
+using RSSReader.View;
 
 namespace RSSReader.ViewModel
 {
@@ -20,11 +24,25 @@ namespace RSSReader.ViewModel
         {
             _feed = feed;
             _defaultHeader = defaultHeader;
+            ItemClickedCommand = new RelayCommand<ItemClickEventArgs>(ItemClick);
             Refresh();
+        }
+
+        void ItemClick(ItemClickEventArgs e)
+        {
+            var item = e.ClickedItem as RSSItem;
+            if (item != null)
+            {
+                Windows.System.Launcher.LaunchUriAsync(new Uri(item.Link, UriKind.Absolute));
+            }
         }
 
         internal async void Refresh()
         {
+            if (OnLoading)
+            {
+                return;
+            }
             OnLoading = true;
             LoadFailed = false;
             if (Reader == null)
@@ -34,7 +52,7 @@ namespace RSSReader.ViewModel
             }
             else
             {
-                LoadFailed = !await RSSReaderFactory.RefreshRSSReader(Reader, _feed);
+                LoadFailed = !await RSSReaderFactory.RefreshRSSReader<Library.Common.RSSReader>(Reader, _feed, false);
             }
             OnLoading = false;
             RaisePropertyChanged(() => Header);
@@ -50,6 +68,10 @@ namespace RSSReader.ViewModel
             {
                 _onLoading = value;
                 RaisePropertyChanged(() => OnLoading);
+                if (OnLoadingChanged != null)
+                {
+                    OnLoadingChanged.Invoke(this, EventArgs.Empty);
+                }
             }
         }
 
@@ -93,6 +115,10 @@ namespace RSSReader.ViewModel
             get { return Reader == null ? new List<RSSItem>() : Reader.ItemList.ToList(); }
         }
 
+        public ICommand ItemClickedCommand { get; private set; }
+
+        public event EventHandler OnLoadingChanged;
+
     }
 
     public partial class MainPageViewModel : ViewModelBase
@@ -111,15 +137,160 @@ namespace RSSReader.ViewModel
     partial class MainPageViewModel
     {
 
-
         private readonly ObservableCollection<RSSFeed> _rssFeeds = new ObservableCollection<RSSFeed>();
 
         public ObservableCollection<RSSFeed> RSSFeeds { get { return _rssFeeds; } }
 
+        #region Commands
+
+        public ICommand AddCommand { get; private set; }
+
+        public ICommand RefreshCommand { get; private set; }
+
+        public ICommand DeleteCommand { get; private set; }
+
+        #endregion
+
+        #region Properties
+        
+        private bool _canAdd = true;
+
+        public bool CanAdd
+        {
+            get
+            {
+                return _canAdd;
+            }
+            set
+            {
+                _canAdd = value;
+                RaisePropertyChanged(() => CanAdd);
+            }
+        }
+
+        public bool CanRefresh
+        {
+            get
+            {
+                return RSSFeeds.Count > SelectedIndex && !RSSFeeds[SelectedIndex].OnLoading;
+            }
+        }
+
+        public bool CanDelete
+        {
+            get
+            {
+                return RSSFeeds.Count > SelectedIndex && !RSSFeeds[SelectedIndex].OnLoading;
+            }
+        }
+        
+        private int _selectedIndex;
+
+        public int SelectedIndex
+        {
+            get { return _selectedIndex; }
+            set
+            {
+                _selectedIndex = value;
+                RaisePropertyChanged(() => SelectedIndex);
+                RefreshCurrentRSSFeed();
+            }
+        }
+
+        #endregion
+
         public MainPageViewModel()
         {
-            RSSFeeds.Add(new RSSFeed(new Uri("http://i.kamigami.org/feed", UriKind.Absolute), "诸神发布站"));
-            RSSFeeds.Add(new RSSFeed(new Uri("http://www.ithome.com/rss/", UriKind.Absolute), "IT之家"));
+            AddCommand = new RelayCommand(AddRSSFeed);
+            RefreshCommand = new RelayCommand(RefreshCurrentRSSFeed);
+            DeleteCommand = new RelayCommand(DeleteCurrentRSSFeed);
+            LoadRSSFeeds();
+        }
+
+        internal override void OnNavigatedToPage(NavigationEventArgs e)
+        {
+            base.OnNavigatedToPage(e);
+            RaisePropertyChanged(() => CanRefresh);
+        }
+
+        void CurrentItemLoaded()
+        {
+            RaisePropertyChanged(() => CanRefresh);
+            RaisePropertyChanged(() => CanDelete);
+        }
+
+        void LoadRSSFeeds()
+        {
+            if (RSSFeedsManager.GetInstance().Feeds.Count == 0)
+            {
+                RSSFeedsManager.GetInstance().AddFeed(new Common.RSSFeed("http://www.ithome.com/rss/", "IT之家"));
+            }
+            foreach (var rssFeed in RSSFeedsManager.GetInstance().Feeds)
+            {
+                RSSFeeds.Add(new RSSFeed(new Uri(rssFeed.Link, UriKind.Absolute), rssFeed.Title));
+            }
+            foreach (var rssFeed in RSSFeeds)
+            {
+                rssFeed.OnLoadingChanged -= RSSFeed_OnLoadingChanged;
+                rssFeed.OnLoadingChanged += RSSFeed_OnLoadingChanged;
+            }
+        }
+
+        void RSSFeed_OnLoadingChanged(object sender, EventArgs e)
+        {
+            CurrentItemLoaded();
+        }
+
+        void AddRSSFeed()
+        {
+            if (Page.BottomAppBar != null)
+            {
+                Page.BottomAppBar.Visibility = Visibility.Collapsed;
+            }
+            var chooser = new AddRSSFeedControl();
+            chooser.Closed += (sender, e) =>
+                              {
+                                  if (!string.IsNullOrEmpty(chooser.Url))
+                                  {
+                                      var itemToAdd = new Common.RSSFeed(chooser.Url, chooser.Title);
+                                      if (RSSFeedsManager.GetInstance().AddFeed(itemToAdd))
+                                      {
+                                          try
+                                          {
+                                              RSSFeeds.Add(new RSSFeed(new Uri(itemToAdd.Link, UriKind.Absolute), itemToAdd.Title));
+                                          }
+                                          catch (Exception)
+                                          {
+                                              RSSFeedsManager.GetInstance().RemoveFeed(itemToAdd);
+                                          }
+                                      }
+                                  }
+                                  if (Page.BottomAppBar != null)
+                                  {
+                                      Page.BottomAppBar.Visibility = Visibility.Visible;
+                                  }
+                              };
+            chooser.Show(Page);
+        }
+
+        void RefreshCurrentRSSFeed()
+        {
+            if (RSSFeeds.Count > SelectedIndex)
+            {
+                RSSFeeds[SelectedIndex].Refresh();
+            }
+            CurrentItemLoaded();
+        }
+
+        void DeleteCurrentRSSFeed()
+        {
+            if (RSSFeeds.Count > SelectedIndex)
+            {
+                var item = RSSFeeds[SelectedIndex];
+                RSSFeeds.Remove(item);
+                RSSFeedsManager.GetInstance().RemoveFeed(new Common.RSSFeed(item.Reader.Link, item.Reader.Title));
+            }
+            CurrentItemLoaded();
         }
 
     }

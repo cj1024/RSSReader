@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Data.Xml.Dom;
+using Windows.Foundation.Metadata;
 using Windows.Storage;
 
 namespace RSSReader.Library.Common
@@ -35,6 +36,10 @@ namespace RSSReader.Library.Common
     public partial class RSSReaderFactory
     {
 
+        const string FILENAME = "Feed.xml";
+
+        private const string TOAST_NO_NETWORK = "RSSReaderFactory.RSSNoNetwork";
+
         static RSSReaderFactory()
         {
             NotificationManager.ToastNotificationManagerFacade.GetInstanceForCurrentApplication().ToastActivated += RSSReaderFactory_ToastActivated;
@@ -42,12 +47,14 @@ namespace RSSReader.Library.Common
 
         static void RSSReaderFactory_ToastActivated(Windows.UI.Notifications.ToastNotification sender, Windows.UI.Notifications.ToastActivatedEventArgs args)
         {
-
+            if (TOAST_NO_NETWORK.Equals(NotificationManager.ToastNotificationManagerFacade.GetInstanceForCurrentApplication().GetToken(sender), StringComparison.OrdinalIgnoreCase))
+            {
+                if (App.Library.Common.DeviceInfoHelper.GetCurrentPlatform() == Platform.WindowsPhone)
+                {
+                    Windows.System.Launcher.LaunchUriAsync(new Uri("ms-settings-wifi:"));
+                }
+            }
         }
-
-        const string FILENAME = "Feed.xml";
-
-        private const string TOAST_NO_NETWORK = "NoNetwork";
 
         private static async Task<XmlDocument> GetRSSDocumentIgnoreCache(Uri rssFeed)
         {
@@ -66,7 +73,7 @@ namespace RSSReader.Library.Common
             }
         }
 
-        private static async Task<XmlDocument> GetRSSDocument<T>(Uri rssFeed) where T : IRSSReader
+        private static async Task<XmlDocument> GetRSSDocument<T>(Uri rssFeed) where T : IRSSReader, new()
         {
             XmlDocument result;
             var folder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync(GetCaptureFileName(rssFeed), CreationCollisionOption.OpenIfExists);
@@ -74,7 +81,7 @@ namespace RSSReader.Library.Common
             if (file != null)
             {
                 var tempResult = await XmlDocument.LoadFromFileAsync(file);
-                var lastReader = Activator.CreateInstance<T>();
+                var lastReader = new T();
                 lastReader.InitializeWithXmlDocument(tempResult);
                 if (lastReader.LastUpdateTime.HasValue && lastReader.UpdateTimeSpan.HasValue && lastReader.LastUpdateTime.Value.Add(lastReader.UpdateTimeSpan.Value) < DateTime.Now)
                 {
@@ -105,7 +112,7 @@ namespace RSSReader.Library.Common
             return result;
         }
 
-        public static async Task<T> GetRSSReaderInstance<T>(Uri rssFeed) where T : IRSSReader
+        public static async Task<T> GetRSSReaderInstance<T>(Uri rssFeed) where T : IRSSReader, new ()
         {
             var doc = await GetRSSDocument<T>(rssFeed);
             if (doc == null)
@@ -117,9 +124,9 @@ namespace RSSReader.Library.Common
             return reader;
         }
 
-        public static async Task<bool> RefreshRSSReader(IRSSReader instance, Uri rssFeed)
+        public static async Task<bool> RefreshRSSReader<T>(IRSSReader instance, Uri rssFeed, bool ignoreCache) where  T : IRSSReader, new ()
         {
-            var doc = await GetRSSDocumentIgnoreCache(rssFeed);
+            var doc = ignoreCache? await GetRSSDocumentIgnoreCache(rssFeed) : await GetRSSDocument<T>(rssFeed);
             if (doc != null)
             {
                 instance.InitializeWithXmlDocument(doc);

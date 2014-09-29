@@ -1,4 +1,5 @@
-﻿using RSSReader.Common;
+﻿using Windows.UI.Xaml.Navigation;
+using RSSReader.Common;
 
 namespace RSSReader.ViewModel
 {
@@ -22,6 +23,34 @@ namespace RSSReader.ViewModel
             if (ViewModel != null)
             {
                 ViewModel.NavigationHelper_LoadState(sender, e);
+            }
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            if (ViewModel != null)
+            {
+                ViewModel.Page = this;
+                ViewModel.OnNavigatedToPage(e);
+            }
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+            if (ViewModel != null)
+            {
+                ViewModel.OnNavigatingFromPage(e);
+            }
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+            if (ViewModel != null)
+            {
+                ViewModel.OnNavigatedFromPage(e);
             }
         }
 

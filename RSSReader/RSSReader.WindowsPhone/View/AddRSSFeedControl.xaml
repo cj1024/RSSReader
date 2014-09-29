@@ -1,0 +1,29 @@
+﻿<UserControl
+    x:Class="RSSReader.View.AddRSSFeedControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:Converters="using:RSSReader.Converters"
+    mc:Ignorable="d"
+    d:DesignHeight="800"
+    d:DesignWidth="480">
+    <UserControl.Resources>
+        <Converters:BooleanConverterBase x:Key="BooleanConverter"/>
+    </UserControl.Resources>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid Margin="24">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <!--<RowDefinition Height="*" MaxHeight="432"/>-->
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBox Grid.Row="0" x:Name="TitleTextBox" Header="标题" InputScope="Chat"/>
+            <TextBox Grid.Row="1" x:Name="UrlTextBox" Header="地址" InputScope="Url"/>
+            <!--<Button x:Name="UseBarCode" Grid.Row="2" Content="二维码输入地址" Click="UseBarCode_OnClick" VerticalAlignment="Top"/>
+            <CaptureElement x:Name="CameraPreview" Grid.Row="2" Visibility="Collapsed" Width="432" Height="432" Stretch="None"/>-->
+            <Button Grid.Row="2" Content="确认" Click="Confirm_OnClick" IsEnabled="{Binding ElementName=UrlTextBox,Path=Text,Converter={StaticResource BooleanConverter}}"/>
+        </Grid>
+    </Grid>
+</UserControl>

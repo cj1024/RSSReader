@@ -19,7 +19,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\NavigationHelperPage.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\PropertySupport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\RelayCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\RSSFeedsManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\SuspensionManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\TaskExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Controls\AdvancedListView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\RSSReaderConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)View\PageBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\NotificationObject.cs" />
