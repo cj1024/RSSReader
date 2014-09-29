@@ -25,7 +25,7 @@ namespace RSSReader.ViewModel
             _feed = feed;
             _defaultHeader = defaultHeader;
             ItemClickedCommand = new RelayCommand<ItemClickEventArgs>(ItemClick);
-            Refresh();
+            Refresh(true);
         }
 
         void ItemClick(ItemClickEventArgs e)
@@ -37,7 +37,7 @@ namespace RSSReader.ViewModel
             }
         }
 
-        internal async void Refresh()
+        internal async void Refresh(bool ignoreCahce)
         {
             if (OnLoading)
             {
@@ -45,6 +45,7 @@ namespace RSSReader.ViewModel
             }
             OnLoading = true;
             LoadFailed = false;
+            bool isCahce = true;
             if (Reader == null)
             {
                 Reader = await RSSReaderFactory.GetRSSReaderInstance<Library.Common.RSSReader>(_feed);
@@ -52,11 +53,16 @@ namespace RSSReader.ViewModel
             }
             else
             {
-                LoadFailed = !await RSSReaderFactory.RefreshRSSReader<Library.Common.RSSReader>(Reader, _feed, false);
+                var result = await RSSReaderFactory.RefreshRSSReader<Library.Common.RSSReader>(Reader, _feed, ignoreCahce);
+                LoadFailed = result.IsSuccessful;
+                isCahce = result.IsCache;
             }
             OnLoading = false;
             RaisePropertyChanged(() => Header);
-            RaisePropertyChanged(() => ListItems);
+            if (!LoadFailed && (!isCahce || ListItems == null))
+            {
+                ListItems = Reader == null ? new List<RSSItem>() : Reader.ItemList.ToList();
+            }
         }
 
         private bool _onLoading;
@@ -107,12 +113,19 @@ namespace RSSReader.ViewModel
 
         public string Header
         {
-            get { return Reader == null || string.IsNullOrEmpty(Reader.Title) ? _defaultHeader : Reader.Title; }
+            get { return Reader == null || !string.IsNullOrEmpty(_defaultHeader) ? _defaultHeader : Reader.Title; }
         }
+
+        private IList<RSSItem> _listItems;
 
         public IList<RSSItem> ListItems
         {
-            get { return Reader == null ? new List<RSSItem>() : Reader.ItemList.ToList(); }
+            get { return _listItems; }
+            set
+            {
+                _listItems = value;
+                RaisePropertyChanged(() => ListItems);
+            }
         }
 
         public ICommand ItemClickedCommand { get; private set; }
@@ -193,7 +206,7 @@ namespace RSSReader.ViewModel
             {
                 _selectedIndex = value;
                 RaisePropertyChanged(() => SelectedIndex);
-                RefreshCurrentRSSFeed();
+                RefreshCurrentRSSFeed(false);
             }
         }
 
@@ -275,10 +288,15 @@ namespace RSSReader.ViewModel
 
         void RefreshCurrentRSSFeed()
         {
+            RefreshCurrentRSSFeed(true);
+        }
+
+        void RefreshCurrentRSSFeed(bool ignoreCache)
+        {
             CurrentItemLoaded();
             if (RSSFeeds.Count > SelectedIndex)
             {
-                RSSFeeds[SelectedIndex].Refresh();
+                RSSFeeds[SelectedIndex].Refresh(ignoreCache);
             }
         }
 

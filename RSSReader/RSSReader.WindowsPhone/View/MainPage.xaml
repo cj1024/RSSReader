@@ -56,10 +56,10 @@
                                         <RowDefinition/>
                                         <RowDefinition/>
                                     </Grid.RowDefinitions>
-                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="24"/>
-                                    <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="18" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="24" MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="18" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" MaxLines="4" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
                                     <Image Grid.Row="2" Source="{Binding PreviewUrl}" Visibility="{Binding PreviewUrl,Converter={StaticResource VisibilityConverter}}" Stretch="UniformToFill" MaxHeight="300"/>
-                                    <TextBlock Grid.Row="3" Text="{Binding PublishTime,Converter={StaticResource DateTimeFormatConverter},ConverterParameter='MM-dd HH:mm'}" FontSize="16" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" TextAlignment="Right"/>
+                                    <TextBlock Grid.Row="3" Text="{Binding LocalPublishTime,Converter={StaticResource DateTimeFormatConverter},ConverterParameter='MM-dd HH:mm'}" FontSize="16" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" TextAlignment="Right"/>
                                 </Grid>
                             </DataTemplate>
                         </ListView.ItemTemplate>

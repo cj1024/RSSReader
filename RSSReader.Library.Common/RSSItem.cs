@@ -9,6 +9,7 @@ namespace RSSReader.Library.Common
         public string Link { get; internal set; }
         public string Description { get; internal set; }
         public DateTime? PublishTime { get; internal set; }
+        public DateTime? LocalPublishTime { get { return PublishTime.HasValue ? (DateTime?) PublishTime.Value.ToLocalTime() : null; } }
         public string MediaType { get; internal set; }
         public string MediaUrl { get; internal set; }
         public long MediaLength { get; internal set; }

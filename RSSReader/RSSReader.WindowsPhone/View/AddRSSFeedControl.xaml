@@ -20,7 +20,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBox Grid.Row="0" x:Name="TitleTextBox" Header="标题" InputScope="Chat"/>
-            <TextBox Grid.Row="1" x:Name="UrlTextBox" Header="地址" InputScope="Url"/>
+            <TextBox Grid.Row="1" x:Name="UrlTextBox" Header="地址" InputScope="Url" PlaceholderText="可以用微信扫一扫复制哦"/>
             <!--<Button x:Name="UseBarCode" Grid.Row="2" Content="二维码输入地址" Click="UseBarCode_OnClick" VerticalAlignment="Top"/>
             <CaptureElement x:Name="CameraPreview" Grid.Row="2" Visibility="Collapsed" Width="432" Height="432" Stretch="None"/>-->
             <Button Grid.Row="2" Content="确认" Click="Confirm_OnClick" IsEnabled="{Binding ElementName=UrlTextBox,Path=Text,Converter={StaticResource BooleanConverter}}"/>

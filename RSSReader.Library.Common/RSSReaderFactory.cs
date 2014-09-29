@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -11,6 +10,12 @@ using Windows.Storage;
 
 namespace RSSReader.Library.Common
 {
+
+    public class RSSReaderFactoryRefreshResult
+    {
+        public bool IsSuccessful { get; set; }
+        public bool IsCache { get; set; }
+    }
 
     partial class RSSReaderFactory
     {
@@ -37,6 +42,12 @@ namespace RSSReader.Library.Common
     public partial class RSSReaderFactory
     {
 
+        private class RSSReaderXmlDocument
+        {
+            internal XmlDocument Document { get; set; }
+            internal bool IsCache { get; set; }
+        }
+
         const string FILENAME = "Feed.xml";
 
         private const string TOAST_NO_NETWORK = "RSSReaderFactory.RSSNoNetwork";
@@ -57,7 +68,7 @@ namespace RSSReader.Library.Common
             }
         }
 
-        private static async Task<XmlDocument> GetRSSDocumentIgnoreCache(Uri rssFeed)
+        private static async Task<RSSReaderXmlDocument> GetRSSDocumentIgnoreCache(Uri rssFeed)
         {
             if (!App.Library.Common.DeviceInfoHelper.IsNetworkAvailable)
             {
@@ -66,7 +77,7 @@ namespace RSSReader.Library.Common
             }
             try
             {
-                return await XmlDocument.LoadFromUriAsync(rssFeed);
+                return new RSSReaderXmlDocument {Document = await XmlDocument.LoadFromUriAsync(rssFeed), IsCache = true};
             }
             catch (Exception)
             {
@@ -74,9 +85,10 @@ namespace RSSReader.Library.Common
             }
         }
 
-        private static async Task<XmlDocument> GetRSSDocument<T>(Uri rssFeed) where T : IRSSReader, new()
+        private static async Task<RSSReaderXmlDocument> GetRSSDocument<T>(Uri rssFeed) where T : IRSSReader, new()
         {
             XmlDocument result;
+            bool isCache;
             var folder = await ApplicationData.Current.TemporaryFolder.CreateFolderAsync(GetCaptureFileName(rssFeed), CreationCollisionOption.OpenIfExists);
             var file = (await folder.GetFilesAsync()).FirstOrDefault(f => f.Name.Equals(FILENAME, StringComparison.OrdinalIgnoreCase));
             if (file != null)
@@ -84,37 +96,70 @@ namespace RSSReader.Library.Common
                 var tempResult = await XmlDocument.LoadFromFileAsync(file);
                 var lastReader = new T();
                 lastReader.InitializeWithXmlDocument(tempResult);
-                if (lastReader.LastUpdateTime.HasValue && lastReader.UpdateTimeSpan.HasValue && lastReader.LastUpdateTime.Value.Add(lastReader.UpdateTimeSpan.Value) < DateTime.Now)
+                if (lastReader.LastUpdateTime.HasValue && lastReader.UpdateTimeSpan.HasValue)
                 {
-                    result = tempResult;
+                    if (lastReader.LastUpdateTime.Value.Add(lastReader.UpdateTimeSpan.Value).ToLocalTime() > DateTime.Now)
+                    {
+                        result = tempResult;
+                        isCache = true;
+                    }
+                    else
+                    {
+                        var realResult = await GetRSSDocumentIgnoreCache(rssFeed);
+                        if (realResult != null)
+                        {
+                            result = realResult.Document;
+                            isCache = false;
+                            await file.DeleteAsync();
+                            file = null;
+                        }
+                        else
+                        {
+                            result = tempResult;
+                            isCache = true;
+                        }
+                    }
                 }
-                else if (file.DateCreated.AddMinutes(15) >= DateTime.Now)
+                else if (file.DateCreated.AddMinutes(15).LocalDateTime > DateTime.Now)
                 {
                     result = tempResult;
+                    isCache = true;
                 }
                 else
                 {
-                    result = await GetRSSDocumentIgnoreCache(rssFeed) ?? tempResult;
+                    var realResult = await GetRSSDocumentIgnoreCache(rssFeed);
+                    if (realResult != null)
+                    {
+                        result = realResult.Document;
+                        isCache = false;
+                        await file.DeleteAsync();
+                        file = null;
+                    }
+                    else
+                    {
+                        result = tempResult;
+                        isCache = true;
+                    }
                 }
-                await file.DeleteAsync();
             }
             else
             {
                 try
                 {
-                    result = await GetRSSDocumentIgnoreCache(rssFeed);
+                    result = (await GetRSSDocumentIgnoreCache(rssFeed)).Document;
                 }
                 catch (Exception)
                 {
                     result = null;
                 }
+                isCache = false;
             }
-            if (result != null)
+            if (file == null && result != null)
             {
                 file = await folder.CreateFileAsync(FILENAME);
                 await result.SaveToFileAsync(file);
             }
-            return result;
+            return new RSSReaderXmlDocument {Document = result, IsCache = isCache};
         }
 
         public static async Task<T> GetRSSReaderInstance<T>(Uri rssFeed) where T : IRSSReader, new ()
@@ -125,18 +170,18 @@ namespace RSSReader.Library.Common
                 return default(T);
             }
             var reader = Activator.CreateInstance<T>();
-            reader.InitializeWithXmlDocument(doc);
+            reader.InitializeWithXmlDocument(doc.Document);
             return reader;
         }
 
-        public static async Task<bool> RefreshRSSReader<T>(IRSSReader instance, Uri rssFeed, bool ignoreCache) where  T : IRSSReader, new ()
+        public static async Task<RSSReaderFactoryRefreshResult> RefreshRSSReader<T>(IRSSReader instance, Uri rssFeed, bool ignoreCache) where T : IRSSReader, new()
         {
-            var doc = ignoreCache? await GetRSSDocumentIgnoreCache(rssFeed) : await GetRSSDocument<T>(rssFeed);
+            var doc = ignoreCache ? await GetRSSDocumentIgnoreCache(rssFeed) : await GetRSSDocument<T>(rssFeed);
             if (doc != null)
             {
-                instance.InitializeWithXmlDocument(doc);
+                instance.InitializeWithXmlDocument(doc.Document);
             }
-            return false;
+            return new RSSReaderFactoryRefreshResult {IsSuccessful = doc != null, IsCache = doc != null && doc.IsCache};
         }
 
     }
