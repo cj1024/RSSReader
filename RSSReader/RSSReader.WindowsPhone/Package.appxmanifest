@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
-  <Identity Name="f3da3184-b4a1-47dc-958f-0752edefd53a" Publisher="CN=j_chen" Version="1.0.0.0" />
-  <mp:PhoneIdentity PhoneProductId="f3da3184-b4a1-47dc-958f-0752edefd53a" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Identity Name="39674cj1024.RSSBeta" Publisher="CN=AF34D80C-9982-4B30-9237-25BA386C19A0" Version="0.1.0.0" />
+  <mp:PhoneIdentity PhoneProductId="528c490b-9563-4b75-bec9-2727332d44de" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>RSSReader.WindowsPhone</DisplayName>
-    <PublisherDisplayName>j_chen</PublisherDisplayName>
+    <DisplayName>RSS阅读器 Beta</DisplayName>
+    <PublisherDisplayName>cj1024</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
   <Prerequisites>
@@ -16,7 +16,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="RSSReader.WindowsPhone.App">
-      <m3:VisualElements DisplayName="RSS阅读器" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="一个简单的RSS订阅应用，可以随心所欲的添加RSS源" ForegroundText="light" BackgroundColor="transparent" ToastCapable="true">
+      <m3:VisualElements DisplayName="RSS阅读器 Beta" Square150x150Logo="Assets\Logo.png" Square44x44Logo="Assets\SmallLogo.png" Description="一个简单的RSS订阅应用，可以随心所欲的添加RSS源" ForegroundText="light" BackgroundColor="transparent" ToastCapable="true">
         <m3:DefaultTile Wide310x150Logo="Assets\WideLogo.png" Square71x71Logo="Assets\Square71x71Logo.png">
           <m3:ShowNameOnTiles>
             <m3:ShowOn Tile="wide310x150Logo" />
