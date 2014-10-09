@@ -46,22 +46,32 @@ namespace RSSReader.ViewModel
             OnLoading = true;
             LoadFailed = false;
             bool isCahce = true;
-            if (Reader == null)
+            try
             {
-                Reader = await RSSReaderFactory.GetRSSReaderInstance<Library.Common.RSSReader>(_feed);
-                LoadFailed = Reader == null;
+                if (Reader == null)
+                {
+                    Reader = await RSSReaderFactory.GetRSSReaderInstance<Library.Common.RSSReader>(_feed);
+                    LoadFailed = Reader == null;
+                }
+                else
+                {
+                    var result = await RSSReaderFactory.RefreshRSSReader<Library.Common.RSSReader>(Reader, _feed, ignoreCahce);
+                    LoadFailed = !result.IsSuccessful;
+                    isCahce = result.IsCache;
+                }
             }
-            else
+            catch
             {
-                var result = await RSSReaderFactory.RefreshRSSReader<Library.Common.RSSReader>(Reader, _feed, ignoreCahce);
-                LoadFailed = result.IsSuccessful;
-                isCahce = result.IsCache;
+                LoadFailed = true;
             }
-            OnLoading = false;
-            RaisePropertyChanged(() => Header);
-            if (!LoadFailed && (!isCahce || ListItems == null))
+            finally
             {
-                ListItems = Reader == null ? new List<RSSItem>() : Reader.ItemList.ToList();
+                OnLoading = false;
+                RaisePropertyChanged(() => Header);
+                if (!LoadFailed && (!isCahce || ListItems == null))
+                {
+                    ListItems = Reader == null || Reader.ItemList == null ? new List<RSSItem>() : Reader.ItemList.ToList();
+                }
             }
         }
 

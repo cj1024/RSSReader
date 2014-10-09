@@ -86,32 +86,37 @@ namespace RSSReader.Library.Common
 
         private static T GetInnerTextForTagName<T>(XmlDocument document, string tag)
         {
-            var element = document.GetElementsByTagName(tag).FirstOrDefault();
+            var element = document == null ? null : document.GetElementsByTagName(tag).FirstOrDefault();
             return element == null ? default(T) : ChangeType<T>(element.InnerText);
         }
 
         private static T GetInnerTextForTagName<T>(XmlElement item, string tag)
         {
-            var element = item.GetElementsByTagName(tag).FirstOrDefault();
+            var element = item == null ? null : item.GetElementsByTagName(tag).FirstOrDefault();
             return element == null ? default(T) : ChangeType<T>(element.InnerText);
         }
 
         private static T GetInnerAttribute<T>(XmlDocument document, string tag, string attribute)
         {
-            var element = document.GetElementsByTagName(tag).FirstOrDefault();
+            var element = document == null ? null : document.GetElementsByTagName(tag).FirstOrDefault();
             var attributeNode = element == null ? null : element.Attributes.GetNamedItem(attribute);
             return attributeNode == null ? default(T) : ChangeType<T>(attributeNode.InnerText);
         }
 
         private static T GetInnerAttribute<T>(XmlElement document, string tag, string attribute)
         {
-            var element = document.GetElementsByTagName(tag).FirstOrDefault();
+            var element = document == null ? null : document.GetElementsByTagName(tag).FirstOrDefault();
             var attributeNode = element == null ? null : element.Attributes.GetNamedItem(attribute);
             return attributeNode == null ? default(T) : ChangeType<T>(attributeNode.InnerText);
         }
 
         public void InitializeWithXmlDocument(XmlDocument document)
         {
+            if (document == null)
+            {
+                ItemList = new List<RSSItem>();
+                return;
+            }
             Title = GetInnerTextForTagName<string>(document, "title");
             Link = GetInnerTextForTagName<string>(document, "link");
             Description = GetInnerTextForTagName<string>(document, "description");

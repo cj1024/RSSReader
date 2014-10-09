@@ -49,7 +49,7 @@
                         </ListView.Footer>
                         <ListView.ItemTemplate>
                             <DataTemplate>
-                                <Grid HorizontalAlignment="Stretch">
+                                <Grid HorizontalAlignment="Stretch" x:Name="ListItemLayoutRoot">
                                     <Grid.RowDefinitions>
                                         <RowDefinition/>
                                         <RowDefinition/>
@@ -58,7 +58,7 @@
                                     </Grid.RowDefinitions>
                                     <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="24" MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
                                     <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="18" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" MaxLines="4" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
-                                    <Image Grid.Row="2" Source="{Binding PreviewUrl}" Visibility="{Binding PreviewUrl,Converter={StaticResource VisibilityConverter}}" Stretch="UniformToFill" MaxHeight="300"/>
+                                    <Image Grid.Row="2" Source="{Binding PreviewUrl}" Visibility="{Binding PreviewUrl,Converter={StaticResource VisibilityConverter}}" Stretch="UniformToFill" MaxWidth="360" MaxHeight="202"/>
                                     <TextBlock Grid.Row="3" Text="{Binding LocalPublishTime,Converter={StaticResource DateTimeFormatConverter},ConverterParameter='MM-dd HH:mm'}" FontSize="16" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" TextAlignment="Right"/>
                                 </Grid>
                             </DataTemplate>
@@ -70,9 +70,9 @@
     </Pivot>
     <Page.BottomAppBar>
         <CommandBar>
-            <AppBarButton Icon="Add" Label="Add" Command="{Binding AddCommand}" IsEnabled="{Binding CanAdd}"/>
-            <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" IsEnabled="{Binding CanRefresh}"/>
-            <AppBarButton Icon="Delete" Label="Delete" Command="{Binding DeleteCommand}" IsEnabled="{Binding CanDelete}"/>
+            <AppBarButton Icon="Add" Label="添加RSS源" Command="{Binding AddCommand}" IsEnabled="{Binding CanAdd}"/>
+            <AppBarButton Icon="Refresh" Label="刷新RSS源" Command="{Binding RefreshCommand}" IsEnabled="{Binding CanRefresh}"/>
+            <AppBarButton Icon="Delete" Label="删除RSS源" Command="{Binding DeleteCommand}" IsEnabled="{Binding CanDelete}"/>
         </CommandBar>
     </Page.BottomAppBar>
 </ViewModel:ViewModelPage>

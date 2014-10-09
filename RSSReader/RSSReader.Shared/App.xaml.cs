@@ -36,9 +36,48 @@ namespace RSSReader
         /// </summary>
         public App()
         {
+#if WINDOWS_PHONE_APP
+            this.UnhandledException += this.WindowPhoneApp_OnUnhandledException;
+#endif
             this.InitializeComponent();
             this.Suspending += this.OnSuspending;
         }
+
+#if WINDOWS_PHONE_APP
+
+        private async void WindowPhoneApp_OnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+        {
+            unhandledExceptionEventArgs.Handled = true;
+            var message = unhandledExceptionEventArgs.Message;
+            var stacktrace = unhandledExceptionEventArgs.Exception.StackTrace ?? "null";
+#if DEBUG
+            await (new Windows.UI.Popups.MessageDialog(stacktrace, message)).ShowAsync();
+#endif
+            var messageDialog = new Windows.UI.Popups.MessageDialog("我们遇到了一些问题，是否愿意将问题告知我们？", "提示");
+            messageDialog.Commands.Add(new Windows.UI.Popups.UICommand
+                                         {
+                                             Id = 0,
+                                             Label = "是",
+                                             Invoked = async command =>
+                                                             {
+                                                                 var emailMessage = new Windows.ApplicationModel.Email.EmailMessage
+                                                                                    {
+                                                                                        Subject = "UnhandledException",
+                                                                                        Body = string.Format("Message:\n{0}\nStackTrace:\n{1}", message, stacktrace)
+                                                                                    };
+                                                                 emailMessage.To.Add(new Windows.ApplicationModel.Email.EmailRecipient("RSSReader_Bug@outlook.com", "BugReport RSSReader"));
+                                                                 await Windows.ApplicationModel.Email.EmailManager.ShowComposeNewEmailAsync(emailMessage);
+                                                             }
+                                         });
+            messageDialog.Commands.Add(new Windows.UI.Popups.UICommand
+                                         {
+                                             Id = 1,
+                                             Label = "否"
+                                         });
+            await messageDialog.ShowAsync();
+        }
+
+#endif
 
         /// <summary>
         /// 在应用程序由最终用户正常启动时进行调用。
