@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
-  <Identity Name="39674cj1024.RSSBeta" Publisher="CN=AF34D80C-9982-4B30-9237-25BA386C19A0" Version="0.1.0.0" />
+  <Identity Name="39674cj1024.RSSBeta" Publisher="CN=AF34D80C-9982-4B30-9237-25BA386C19A0" Version="0.1.1.0" />
   <mp:PhoneIdentity PhoneProductId="528c490b-9563-4b75-bec9-2727332d44de" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>RSS阅读器 Beta</DisplayName>
