@@ -17,7 +17,7 @@ namespace RSSReader.Library.Common
         public DateTime? LastUpdateTime { get; private set; }
         public TimeSpan? UpdateTimeSpan { get; private set; }
         public string Image { get; private set; }
-        public IEnumerable<RSSItem> ItemList { get; private set; }
+        public IList<RSSItem> ItemList { get; private set; }
 
         #endregion IRSSReader Properties
 
@@ -84,30 +84,17 @@ namespace RSSReader.Library.Common
             }
         }
 
-        private static T GetInnerTextForTagName<T>(XmlDocument document, string tag)
+        private static T GetInnerTextForTagName<T>(IXmlNode xNode, string tag, T defaultValue = default(T))
         {
-            var element = document == null ? null : document.GetElementsByTagName(tag).FirstOrDefault();
-            return element == null ? default(T) : ChangeType<T>(element.InnerText);
+            var element = xNode == null ? null : xNode.ChildNodes.FirstOrDefault(node => node.NodeName.Equals(tag, StringComparison.OrdinalIgnoreCase));
+            return element == null ? defaultValue : ChangeType<T>(element.InnerText);
         }
 
-        private static T GetInnerTextForTagName<T>(XmlElement item, string tag)
+        private static T GetInnerAttribute<T>(IXmlNode xNode, string tag, string attribute, T defaultValue = default(T))
         {
-            var element = item == null ? null : item.GetElementsByTagName(tag).FirstOrDefault();
-            return element == null ? default(T) : ChangeType<T>(element.InnerText);
-        }
-
-        private static T GetInnerAttribute<T>(XmlDocument document, string tag, string attribute)
-        {
-            var element = document == null ? null : document.GetElementsByTagName(tag).FirstOrDefault();
+            var element = xNode == null ? null : xNode.ChildNodes.FirstOrDefault(node => node.NodeName.Equals(tag, StringComparison.OrdinalIgnoreCase));
             var attributeNode = element == null ? null : element.Attributes.GetNamedItem(attribute);
-            return attributeNode == null ? default(T) : ChangeType<T>(attributeNode.InnerText);
-        }
-
-        private static T GetInnerAttribute<T>(XmlElement document, string tag, string attribute)
-        {
-            var element = document == null ? null : document.GetElementsByTagName(tag).FirstOrDefault();
-            var attributeNode = element == null ? null : element.Attributes.GetNamedItem(attribute);
-            return attributeNode == null ? default(T) : ChangeType<T>(attributeNode.InnerText);
+            return attributeNode == null ? defaultValue : ChangeType<T>(attributeNode.InnerText);
         }
 
         public void InitializeWithXmlDocument(XmlDocument document)
@@ -123,7 +110,7 @@ namespace RSSReader.Library.Common
             Image = GetInnerTextForTagName<string>(document, "image");
             LastUpdateTime = ChangeDateTimeType(GetInnerTextForTagName<string>(document, "lastBuildDate")) ?? ChangeDateTimeType(GetInnerTextForTagName<string>(document, "pubDate"));
             UpdateTimeSpan = ChangeTimeSpanType(GetInnerTextForTagName<string>(document, "sy:updatePeriod"), GetInnerTextForTagName<string>(document, "sy:updateFrequency"));
-            ItemList = from item in document.GetElementsByTagName("item").Cast<XmlElement>()
+            ItemList = (from item in document.GetElementsByTagName("item")
                 select new RSSItem
                        {
                            Title = GetInnerTextForTagName<string>(item, "title"),
@@ -133,7 +120,7 @@ namespace RSSReader.Library.Common
                            MediaType = GetInnerAttribute<string>(item, "enclosure", "type"),
                            MediaUrl = GetInnerAttribute<string>(item, "enclosure", "url"),
                            MediaLength = GetInnerAttribute<long>(item, "enclosure", "length")
-                       };
+                       }).ToList();
         }
 
     }

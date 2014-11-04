@@ -52,7 +52,7 @@ namespace RSSReader.Common
         /// <returns>如果可执行此命令，则返回 true；否则返回 false。</returns>
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute();
+            return _canExecute == null || _canExecute();
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace RSSReader.Common
     /// 在下列情况中，始终需要调用 <see cref="RaiseCanExecuteChanged"/>
     /// <see cref="CanExecute"/> 应返回其他的值。
     /// </summary>
-    public class RelayCommand<T> : ICommand where T : class
+    public class RelayCommand<T> : ICommand
     {
         private readonly Action<T> _execute;
         private readonly Func<bool> _canExecute;
@@ -129,7 +129,7 @@ namespace RSSReader.Common
         /// <returns>如果可执行此命令，则返回 true；否则返回 false。</returns>
         public bool CanExecute(object parameter)
         {
-            return _canExecute == null ? true : _canExecute();
+            return _canExecute == null || _canExecute();
         }
 
         /// <summary>
@@ -140,7 +140,14 @@ namespace RSSReader.Common
         /// </param>
         public void Execute(object parameter)
         {
-            _execute(parameter as T);
+            if (parameter is T)
+            {
+                _execute((T)parameter);
+            }
+            else
+            {
+                _execute(default(T));
+            }
         }
 
         /// <summary>

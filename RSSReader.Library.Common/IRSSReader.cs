@@ -12,7 +12,7 @@ namespace RSSReader.Library.Common
         DateTime? LastUpdateTime { get; }
         TimeSpan? UpdateTimeSpan { get; }
         string Image { get; }
-        System.Collections.Generic.IEnumerable<RSSItem> ItemList { get; }
+        System.Collections.Generic.IList<RSSItem> ItemList { get; }
         void InitializeWithXmlDocument(XmlDocument document);
     }
 

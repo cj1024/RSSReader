@@ -24,10 +24,21 @@
     <Compile Include="$(MSBuildThisFileDirectory)Common\TaskExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Controls\AdvancedListView.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converters\RSSReaderConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\MainPageViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ViewModelLocator_Extension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)View\AddRSSFeedControl.xaml.cs">
+      <DependentUpon>AddRSSFeedControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)View\PageBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\NotificationObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ViewModelBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ViewModelLocator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ViewModel\ViewModelPage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)View\AddRSSFeedControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
 </Project>

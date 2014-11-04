@@ -1,13 +1,78 @@
-﻿<Page
+﻿<ViewModel:ViewModelPage
     x:Class="RSSReader.View.MainPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:RSSReader"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
-
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-
-    </Grid>
-</Page>
+    xmlns:ViewModel="using:RSSReader.ViewModel"
+    xmlns:Converters="using:RSSReader.Converters"
+    xmlns:Controls="using:RSSReader.Controls"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    DataContext="{Binding Source={StaticResource ViewModelLocator},Path=MainPageViewModel}"
+    >
+    
+    <Page.Resources>
+        <Converters:DateToStringConverter x:Key="DateTimeFormatConverter"/>
+        <Converters:BooleanConverter x:Key="VisibilityConverter">
+            <Converters:BooleanConverter.TrueValue>
+                <Visibility>Visible</Visibility>
+            </Converters:BooleanConverter.TrueValue>
+            <Converters:BooleanConverter.FalseValue>
+                <Visibility>Collapsed</Visibility>
+            </Converters:BooleanConverter.FalseValue>
+        </Converters:BooleanConverter>
+    </Page.Resources>
+    <FlipView ItemsSource="{Binding Path=RSSFeeds}" SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
+        <!--<Pivot.HeaderTemplate>
+            <DataTemplate>
+                <TextBlock DataContext="{Binding}" Text="{Binding Header}"/>
+            </DataTemplate>
+        </Pivot.HeaderTemplate>-->
+        <FlipView.ItemTemplate>
+            <DataTemplate>
+                <Grid>
+                    <ProgressBar IsIndeterminate="True" Visibility="{Binding OnLoading,Converter={StaticResource VisibilityConverter}}" VerticalAlignment="Top"/>
+                    <Controls:AdvancedListView IsItemClickEnabled="True" ItemsSource="{Binding ListItems}" ItemClickedCommand="{Binding ItemClickedCommand}">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="Margin" Value="0,0,0,12"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.Header>
+                            <StackPanel>
+                            </StackPanel>
+                        </ListView.Header>
+                        <ListView.Footer>
+                            <StackPanel>
+                            </StackPanel>
+                        </ListView.Footer>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Stretch" x:Name="ListItemLayoutRoot">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0" Text="{Binding Title}" FontSize="24" MaxLines="2" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Grid.Row="1" Text="{Binding Description}" FontSize="18" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" MaxLines="4" TextWrapping="Wrap" TextTrimming="CharacterEllipsis"/>
+                                    <Image Grid.Row="2" Source="{Binding PreviewUrl}" Visibility="{Binding PreviewUrl,Converter={StaticResource VisibilityConverter}}" Stretch="UniformToFill" MaxWidth="360" MaxHeight="202"/>
+                                    <TextBlock Grid.Row="3" Text="{Binding LocalPublishTime,Converter={StaticResource DateTimeFormatConverter},ConverterParameter='MM-dd HH:mm'}" FontSize="16" Foreground="{ThemeResource ApplicationSecondaryForegroundThemeBrush}" TextAlignment="Right"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </Controls:AdvancedListView>
+                </Grid>
+            </DataTemplate>
+        </FlipView.ItemTemplate>
+    </FlipView>
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton Icon="Add" Label="添加RSS源" Command="{Binding AddCommand}" IsEnabled="{Binding CanAdd}"/>
+            <AppBarButton Icon="Refresh" Label="刷新RSS源" Command="{Binding RefreshCommand}" IsEnabled="{Binding CanRefresh}"/>
+            <AppBarButton Icon="Delete" Label="删除RSS源" Command="{Binding DeleteCommand}" IsEnabled="{Binding CanDelete}"/>
+        </CommandBar>
+    </Page.BottomAppBar>
+</ViewModel:ViewModelPage>

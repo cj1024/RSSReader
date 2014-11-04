@@ -104,12 +104,32 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <ProjectReference Include="..\..\App.Library.Common\App.Library.Common.csproj">
+      <Project>{c964c970-ed0e-44c9-9be8-24f5392d3038}</Project>
+      <Name>App.Library.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\BarCode.Library\BarCode.Library.csproj">
+      <Project>{db27cbaf-f180-404d-bf0b-3158cdb3eca1}</Project>
+      <Name>BarCode.Library</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\NotificationManager\NotificationManager.csproj">
+      <Project>{22923db4-9754-4ad5-b124-496cb599d40a}</Project>
+      <Name>NotificationManager</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\RSSReader.Library.Common\RSSReader.Library.Common.csproj">
+      <Project>{e9f91406-f41d-48e3-ba46-9a63190049ff}</Project>
+      <Name>RSSReader.Library.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Silverlight ZXing Core.Universal\Silverlight ZXing Core.Universal.csproj">
+      <Project>{195d20cf-892c-42e8-bd2c-f6e1b12d4a1c}</Project>
+      <Name>Silverlight ZXing Core.Universal</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="View\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -123,6 +143,7 @@
     <Content Include="Assets\SplashScreen.scale-100.png" />
     <Content Include="Assets\StoreLogo.scale-100.png" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Page Include="View\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>

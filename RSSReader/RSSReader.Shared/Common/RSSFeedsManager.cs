@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Json;
+using System.Text;
 using Windows.Storage;
 
 namespace RSSReader.Common
@@ -67,6 +68,10 @@ namespace RSSReader.Common
             var file = TaskExtensions.RunSynchronously(() => ApplicationData.Current.LocalFolder.CreateFileAsync(FeedsKey, CreationCollisionOption.OpenIfExists).AsTask());
             using (var fileStream = TaskExtensions.RunSynchronously(file.OpenStreamForReadAsync))
             {
+                if (fileStream.Length == 0)
+                {
+                    return;
+                }
                 var items = (IList<RSSFeed>) Serializer.ReadObject(fileStream);
                 if (items != null)
                 {
